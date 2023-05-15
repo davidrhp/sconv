@@ -1,18 +1,18 @@
+use crate::cli::cmd::config::Config;
 use clap::Subcommand;
 use enum_dispatch::enum_dispatch;
-use crate::cli::cmd::config::Config;
 
 use self::convert::Convert;
 
-mod convert;
 mod config;
+mod convert;
 
 #[enum_dispatch(Execute)]
 #[derive(Subcommand)]
 pub enum Command {
     /// Configuration options
     Config(Config),
-    Convert(Convert)
+    Convert(Convert),
 }
 
 #[enum_dispatch]

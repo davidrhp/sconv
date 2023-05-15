@@ -1,11 +1,9 @@
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
+use std::path::PathBuf;
 
-use anyhow::anyhow;
 use anyhow::bail;
 use clap::Args;
 
-use crate::printer;
+use crate::file::FileExtension;
 
 use super::Execute;
 
@@ -18,54 +16,42 @@ pub struct Convert {
 
 impl Execute for Convert {
     fn execute(&self) -> anyhow::Result<()> {
-        // read file
-        // check file type
-        if !self.file.is_file() {
-            bail!("{:?} is not a file", self.file.file_name())
-        }
-        printer::eprintln_debug("Processing", &self.file);
+        eprintln!("Processing: {:?}", &self.file);
 
-        let format = FileFormat::from(&self.file)?;
-        
-        printer::eprintln_debug("Format", &format);
-        
+        let format = FileFormat::try_from(self.file.clone())?;
+        eprintln!("Format: {}", format);
+
         Ok(())
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, strum_macros::Display)]
 enum FileFormat {
-    Excel,
-    Csv,
+    Excel(PathBuf),
+    Csv(PathBuf),
 }
 
-impl FileFormat {
-    fn from<P: AsRef<Path>>(value: P) -> anyhow::Result<Self> {
-        let extension = value.as_ref()
-            .extension()
-            .ok_or_else(|| anyhow!("file has no extension: {:?}", value.as_ref()))?
-            .to_str()
-            .ok_or_else(|| {
-                anyhow!(
-                    "file extenstion is not a valid UTF-8 String: {:?}",
-                    value.as_ref()
-                )
-            })?;
-        
-        Ok(extension.parse()?)
+impl TryFrom<PathBuf> for FileFormat {
+    type Error = anyhow::Error;
+
+    fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
+        if !value.is_file() {
+            bail!("{:?} is not a file", value)
+        }
+
+        let extension = FileExtension::try_from(&value)?;
+
+        FileFormat::from_extension(value, extension)
     }
 }
 
-impl FromStr for FileFormat {
-    type Err = anyhow::Error;
-    
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let format = match s {
-            "xlsx" => Self::Excel,
-            "csv" => Self::Csv,
-            _ => bail!("Unknown extension type: {s}. Please provide one of: [xlsx, csv]"),
+impl FileFormat {
+    fn from_extension(path: PathBuf, extension: FileExtension) -> anyhow::Result<Self> {
+        let format = match extension {
+            FileExtension::Xlsx | FileExtension::Xls => Self::Excel(path),
+            FileExtension::Csv => Self::Csv(path),
         };
 
-        Ok(format)   
+        Ok(format)
     }
 }
