@@ -1,11 +1,53 @@
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow, Context, bail};
+use enum_dispatch::enum_dispatch;
 
 use std::fmt::Debug;
 
+
+
+mod excel;
+mod csv;
+
+pub use excel::Excel;
+pub use csv::Csv;
+
+#[enum_dispatch(Tabular)]
+#[derive(Debug, strum_macros::Display)]
+pub enum FileType {
+    Excel(Excel),
+    Csv(Csv),
+}
+
+impl TryFrom<PathBuf> for FileType {
+    type Error = anyhow::Error;
+
+    fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
+        if !value.is_file() {
+            bail!("{:?} is not a file", value)
+        }
+
+        let extension = FileExtension::try_from(&value)?;
+
+        FileType::from_extension(value, extension)
+    }
+}
+
+impl FileType {
+    fn from_extension(path: PathBuf, extension: FileExtension) -> anyhow::Result<Self> {
+        let format = match extension {
+            FileExtension::Xlsx | FileExtension::Xls => Self::Excel(Excel::new(path)),
+            FileExtension::Csv => Self::Csv(Csv::new(path)),
+        };
+
+        Ok(format)
+    }
+}
+
+
 #[derive(strum_macros::EnumString)]
-pub enum FileExtension {
+enum FileExtension {
     #[strum(serialize = "xlsx")]
     Xlsx,
     #[strum(serialize = "xls")]
@@ -13,21 +55,6 @@ pub enum FileExtension {
     #[strum(serialize = "csv")]
     Csv,
 }
-
-//impl FromStr for FileExtension {
-//    type Err = anyhow::Error;
-//
-//    fn from_str(s: &str) -> Result<Self, Self::Err> {
-//        let extension = match s {
-//            "xlsx" => Self::Xlsx,
-//            "xls" => Self::Xls,
-//            "csv" => Self::Csv,
-//            _ => bail!("Unknown extension type: {s}. Please provide one of: [xlsx, xls, csv]"),
-//        };
-//
-//        Ok(extension)
-//    }
-//}
 
 impl TryFrom<&PathBuf> for FileExtension {
     type Error = anyhow::Error;

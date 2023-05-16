@@ -1,57 +1,47 @@
+use crate::table::Tabular;
+use clap::Args;
 use std::path::PathBuf;
 
-use anyhow::bail;
-use clap::Args;
-
-use crate::file::FileExtension;
-
 use super::Execute;
+use crate::file::FileType;
+use anyhow::{anyhow, Context};
 
 #[derive(Args)]
 pub struct Convert {
     /// Input file that should be converted
     #[arg(long)]
     file: PathBuf,
+
+    /// Name of the Spreadsheet to be parsed. Only required, if relevant for the file type, e.g., '.xlsx'.
+    #[arg(long)]
+    sheet_name: Option<String>,
 }
 
 impl Execute for Convert {
     fn execute(&self) -> anyhow::Result<()> {
         eprintln!("Processing: {:?}", &self.file);
 
-        let format = FileFormat::try_from(self.file.clone())?;
-        eprintln!("Format: {}", format);
+        let file_type = FileType::try_from(self.file.clone())?;
+        eprintln!("Format: {}", file_type);
+
+        self.validate_args(&file_type)
+            .context("argument validation failed")?;
+
+        file_type.into_table()?;
 
         Ok(())
     }
 }
 
-#[derive(Debug, strum_macros::Display)]
-enum FileFormat {
-    Excel(PathBuf),
-    Csv(PathBuf),
-}
-
-impl TryFrom<PathBuf> for FileFormat {
-    type Error = anyhow::Error;
-
-    fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
-        if !value.is_file() {
-            bail!("{:?} is not a file", value)
+impl Convert {
+    fn validate_args(&self, file_type: &FileType) -> anyhow::Result<()> {
+        match file_type {
+            FileType::Excel(_) => self
+                .sheet_name
+                .as_ref()
+                .map(|_name| ())
+                .ok_or_else(|| anyhow!("File type requires a sheet name: {}", file_type)),
+            FileType::Csv(_) => Ok(()),
         }
-
-        let extension = FileExtension::try_from(&value)?;
-
-        FileFormat::from_extension(value, extension)
-    }
-}
-
-impl FileFormat {
-    fn from_extension(path: PathBuf, extension: FileExtension) -> anyhow::Result<Self> {
-        let format = match extension {
-            FileExtension::Xlsx | FileExtension::Xls => Self::Excel(path),
-            FileExtension::Csv => Self::Csv(path),
-        };
-
-        Ok(format)
     }
 }

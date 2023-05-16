@@ -7,7 +7,7 @@ fn main() -> ExitCode {
     let cli = Cli::parse();
 
     if let Err(e) = cli.command.execute() {
-        eprintln!("Exiting: {}", e);
+        eprintln!("Exiting: {:?}", e);
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS

@@ -1,3 +1,5 @@
 /target
 .idea
 .fleet
+~$*
+.DS_Store
