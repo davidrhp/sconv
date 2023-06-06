@@ -1,21 +1,25 @@
 use std::collections::HashMap;
 
-use enum_dispatch::enum_dispatch;
-use crate::file::FileType;
-use crate::file::Csv;
-use crate::file::Excel;
-
+#[derive(Debug)]
 pub struct Table {
-    map: HashMap<String, Vec<String>>,
+    column_to_row_index: HashMap<String, usize>,
+    rows: Vec<Vec<Type>>,
 }
 
 impl Table {
-    pub fn new(map: HashMap<String, Vec<String>>) -> Self {
-        Table { map }
+    pub fn new(column_to_row_index: HashMap<String, usize>, rows: Vec<Vec<Type>>) -> Self {
+        Table {
+            column_to_row_index,
+            rows,
+        }
     }
 }
 
-#[enum_dispatch]
-pub trait Tabular {
-    fn into_table(&self) -> anyhow::Result<Table>;
+#[derive(Debug)]
+pub enum Type {
+    Int(i64),
+    Float(f64),
+    String(String),
+    Bool(bool),
+    Empty,
 }

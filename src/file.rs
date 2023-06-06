@@ -1,23 +1,19 @@
 use std::path::{Path, PathBuf};
 
-use anyhow::{anyhow, Context, bail};
-use enum_dispatch::enum_dispatch;
+use anyhow::{anyhow, bail, Context};
 
 use std::fmt::Debug;
 
-
-
-mod excel;
 mod csv;
+mod excel;
 
-pub use excel::Excel;
 pub use csv::Csv;
+pub use excel::ExcelTable;
 
-#[enum_dispatch(Tabular)]
 #[derive(Debug, strum_macros::Display)]
 pub enum FileType {
-    Excel(Excel),
-    Csv(Csv),
+    Excel,
+    Csv,
 }
 
 impl TryFrom<PathBuf> for FileType {
@@ -35,16 +31,15 @@ impl TryFrom<PathBuf> for FileType {
 }
 
 impl FileType {
-    fn from_extension(path: PathBuf, extension: FileExtension) -> anyhow::Result<Self> {
+    fn from_extension(_path: PathBuf, extension: FileExtension) -> anyhow::Result<Self> {
         let format = match extension {
-            FileExtension::Xlsx | FileExtension::Xls => Self::Excel(Excel::new(path)),
-            FileExtension::Csv => Self::Csv(Csv::new(path)),
+            FileExtension::Xlsx | FileExtension::Xls => Self::Excel,
+            FileExtension::Csv => Self::Csv,
         };
 
         Ok(format)
     }
 }
-
 
 #[derive(strum_macros::EnumString)]
 enum FileExtension {
