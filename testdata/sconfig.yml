@@ -1,0 +1,31 @@
+translations:
+    - name: excelconfig
+      fields:
+        - name: "column_1_int"
+          type: int
+          unit: single
+        - name: "column_2_date"
+          type: float
+          unit: single
+        - name: "column_3_float_with_string"
+          type: float
+          unit: single
+        - name: "column_4_string"
+          type: string
+          unit: single
+        - name: "column_5_boolean"
+          type: bool
+          unit: single
+        - name: "column_6_boolean_as_string"
+          type: string
+          unit: single
+        - name: "column_7_int_multiple"
+          type: int
+          unit: multiple
+          separator: ";"
+        - name: "column_8_float_different_decimal_point"
+          type: float
+          unit: single
+        - name: "column_9_date"
+          type: string
+          unit: single
