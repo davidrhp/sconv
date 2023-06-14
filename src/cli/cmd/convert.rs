@@ -3,9 +3,9 @@ use clap::Args;
 use std::path::PathBuf;
 
 use super::Execute;
+use crate::config;
 use crate::file::{Csv, FileType};
-use crate::settings;
-use crate::table::Table;
+use crate::table::{Table, UnvalidatedTable};
 use anyhow::{anyhow, Context};
 
 #[derive(Args)]
@@ -32,7 +32,7 @@ impl Execute for ConvertArgs {
         self.validate_args(&file_type)
             .context("argument validation failed")?;
 
-        let table: Table = match file_type {
+        let table: Table<UnvalidatedTable> = match file_type {
             FileType::Excel => {
                 let sheet = self.sheet_name.clone().expect("sheet name to be present");
 
@@ -43,7 +43,7 @@ impl Execute for ConvertArgs {
 
         eprintln!("Table: {:?}", table);
 
-        let cfg = settings::Settings::new(&self.config_path);
+        let cfg = config::Config::new(&self.config_path);
 
         eprintln!("{:#?}", cfg);
 

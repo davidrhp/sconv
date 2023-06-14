@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::table::Table;
+use crate::table::{Table, UnvalidatedTable};
 
 #[derive(Debug)]
 pub struct Csv {
@@ -13,7 +13,7 @@ impl Csv {
     }
 }
 
-impl TryFrom<Csv> for Table {
+impl TryFrom<Csv> for Table<UnvalidatedTable> {
     type Error = anyhow::Error;
 
     fn try_from(_value: Csv) -> Result<Self, Self::Error> {

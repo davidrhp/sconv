@@ -3,7 +3,7 @@ use std::{fs::File, io::BufReader, path::Path};
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
-pub struct Settings {
+pub struct Config {
     pub translations: Vec<Translation>,
 }
 
@@ -13,7 +13,7 @@ pub struct Translation {
     pub fields: Vec<Column>,
 }
 
-impl Settings {
+impl Config {
     pub fn new<P>(path: P) -> anyhow::Result<Self>
     where
         P: AsRef<Path>,
@@ -36,7 +36,7 @@ pub enum TypeDescription {
 
 #[derive(Debug, Deserialize)]
 pub struct Column {
-    name: String,
+    pub name: String,
     #[serde(rename = "type")]
     type_description: TypeDescription,
     #[serde(flatten)]

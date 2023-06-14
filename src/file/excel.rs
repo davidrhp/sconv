@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use anyhow::{anyhow, bail, Context};
 use calamine::{open_workbook, DataType, Range, Reader, Xlsx};
 
-use crate::table::{Table, Type};
+use crate::table::{Table, Type, UnvalidatedTable};
 
 const HEADER_ROW: usize = 1;
 
@@ -43,7 +43,7 @@ impl ExcelTable {
     }
 }
 
-impl TryFrom<ExcelTable> for Table {
+impl TryFrom<ExcelTable> for Table<UnvalidatedTable> {
     type Error = anyhow::Error;
 
     fn try_from(value: ExcelTable) -> Result<Self, Self::Error> {
