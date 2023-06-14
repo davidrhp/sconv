@@ -22,7 +22,7 @@ impl TableState for UnvalidatedTable {}
 impl TableState for ValidTable {}
 
 #[derive(Debug)]
-pub struct Table<S: TableState> {
+pub struct Table<S: TableState = UnvalidatedTable> {
     content: Box<TableContent>,
     state: S,
 }
@@ -33,16 +33,20 @@ struct TableContent {
     rows: Vec<Vec<Type>>,
 }
 
-impl Table<UnvalidatedTable> {
+impl Table {
     pub fn new(column_to_row_index: HashMap<String, usize>, rows: Vec<Vec<Type>>) -> Self {
         Table {
             content: Box::new(TableContent {
                 column_to_row_index,
                 rows,
             }),
-            state: UnvalidatedTable {},
+            state: UnvalidatedTable { },
         }
     }
+}
+
+impl Table<UnvalidatedTable> {
+
 
     pub fn validate(self, config: Config) -> Result<Table<ValidTable>, ValidationError> {
         config

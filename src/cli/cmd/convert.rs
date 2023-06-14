@@ -32,7 +32,7 @@ impl Execute for ConvertArgs {
         self.validate_args(&file_type)
             .context("argument validation failed")?;
 
-        let table: Table<UnvalidatedTable> = match file_type {
+        let table: Table = match file_type {
             FileType::Excel => {
                 let sheet = self.sheet_name.clone().expect("sheet name to be present");
 
@@ -41,11 +41,13 @@ impl Execute for ConvertArgs {
             FileType::Csv => Csv::new(self.file_path.clone()).try_into()?,
         };
 
-        eprintln!("Table: {:?}", table);
 
-        let cfg = config::Config::new(&self.config_path);
-
+        let cfg = config::Config::new(&self.config_path)?;
         eprintln!("{:#?}", cfg);
+
+        let table = table.validate(cfg);
+
+        eprintln!("Table: {:?}", table);
 
         Ok(())
     }

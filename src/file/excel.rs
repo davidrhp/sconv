@@ -43,7 +43,7 @@ impl ExcelTable {
     }
 }
 
-impl TryFrom<ExcelTable> for Table<UnvalidatedTable> {
+impl TryFrom<ExcelTable> for Table {
     type Error = anyhow::Error;
 
     fn try_from(value: ExcelTable) -> Result<Self, Self::Error> {
